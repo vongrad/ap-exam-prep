@@ -1,0 +1,16 @@
+There are two exam sets:
+
+1. exam2016.scala.pdf from 2016 (along with the corresponding exam2016.scala
+   file and, spoiler alert, exam2016solutions.scala file).  This is the exam
+   actually used in 2016 in this course.
+
+2. src/main/scala/examFake.scala (along with the corresponding solutions).
+   This is a trial exam prepared in 2016.  It has the same scope and size as an
+   actual exam. This one was never typeset in the PDF file, but all the questions
+   are in comments.
+
+3. The frontpage of the 2017 exam, so that you can familiarize yourself with
+   the intro ahead of time. (exam2017frontpage.scala.pdf)
+
+The build.sbt file and the library implementation files in these sbt project
+are the same as will be used in the final exam.
