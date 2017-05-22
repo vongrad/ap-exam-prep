@@ -57,7 +57,7 @@ object Exercise1 { // this line not needed in REPL
   // QUESTION 1: how do I get the next random number? (check in the REPL and make
   // sure that you indeed have got a different number)
   //
-  // val ... = ...
+  val (x2, rng3) = rng2.nextInt
 
   // The book uses this simple generator to implement a series of various
   // generators, including one for nonnegative integers (function
@@ -89,8 +89,8 @@ object Exercise1 { // this line not needed in REPL
   // generator functions from State.scala, wrap them into a state, and use the
   // above interface to get a random value out of them.
   //
-  // val s_random_x : ... = State (...)
-  // val random_x : ... = ....
+  val s_random_double : State[RNG, Double] = State (RNG._double)
+  val random_x : State[RNG,(Double, Int)] = State(RNG.randDoubleInt)
 
   // This wrapping makes as independent of the names of the functions of the
   // actual generators, so we can write generic functions for all generators,
@@ -117,6 +117,9 @@ object Exercise1 { // this line not needed in REPL
 
   // QUESTION 3: generalize the above function to work for any State object, not
   // just for state pattern applied to the random number generators.
+
+  def state2stream[A, RNG] (s :State[RNG,A]) (seed :RNG) :Stream[A] =
+    s.run(seed) match { case (n,s1) => n #:: state2stream (s) (s1) }
 
   // This hack allows us to hide the state of the random number generator in the
   // stream. We just work with a stream of random numbers declaratively from now
@@ -153,6 +156,8 @@ object Exercise1 { // this line not needed in REPL
   // that you used in Question 2, combine it with the above API to create a
   // stream of random values that it generates. Access the stream to compute
   // several random values.
+
+  val random_doubles_stream = state2stream(s_double)(RNG.Simple(System.currentTimeMillis()))
 
 }
 

@@ -58,22 +58,23 @@ case class Gen[A] (sample :State[RNG,A]) {
   // the output state of one as an input to the next.  This can be used to
   // execute a series of consecutive generations, passing the RNG state around.
 
-  // def listOfN (n :Int) :Gen[List[A]] = ...
-
+  def listOfN (n :Int) :Gen[List[A]] = Gen(State(s => {
+    State.sequence(List.fill(n)(State(s => this.sample.run(s)))).run(s)
+  }))
 
 
   // Exercise 4 (Ex. 8.6 [Chiusano, Bjarnasson 2015])
 
-  // def flatMap[B] (f: A => Gen[B]) :Gen[B] = ...
+  def flatMap[B] (f: A => Gen[B]) :Gen[B] = Gen(this.sample.flatMap(a => f(a).sample))
 
 
   // It would be convenient to also have map (uncomment once you have unit and flatMap)
 
-  // def map[B] (f : A => B) :Gen[B] = this.flatMap (a => Gen.unit[B] (f(a)))
+  def map[B] (f : A => B) :Gen[B] = this.flatMap (a => Gen.unit[B] (f(a)))
 
   // Exercise 5 (Second part of Ex. 8.6)
 
-  // def listOfN(size: Gen[Int]): Gen[List[A]] = ...
+  def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(n => listOfN(n))
 
   // Exercise 6 (Ex. 8.7; I implemented it as a method, the book asks for a
   // function, the difference is minor; you may want to have both for
@@ -82,7 +83,7 @@ case class Gen[A] (sample :State[RNG,A]) {
   // Hint: we already have a generator that emulates tossing a coin. Which one
   // is it? Use flatMap with it.
 
-  // def union (that :Gen[A]) :Gen[A] = ...
+  def union (that :Gen[A]) :Gen[A] = Gen.boolean.flatMap(a => if(a) this else that)
 
   // Exercise 7 continues in the bottom of the file (in the companion object)
 }
@@ -108,7 +109,8 @@ object Gen {
   // generators that are wrapped in \texttt{State} and the state has a
   // \lstinline{map} function.
 
-  // def choose (start :Int, stopExclusive :Int) :Gen[Int] = ...
+  def choose (start :Int, stopExclusive :Int) :Gen[Int] =
+    Gen(State(s => s.nextInt match { case (a, s2) => (Math.abs(a) % (stopExclusive - start) + start, s2)}))
 
 
 
@@ -117,19 +119,19 @@ object Gen {
   // Hint: The \lstinline{State} trait already had \lstinline{unit}
   // implemented.
 
-  // def unit[A] (a : =>A) :Gen[A] = ...
+  def unit[A] (a : =>A) :Gen[A] = Gen(State.unit(a))
 
   // Hint: How do you convert a random integer number to a random Boolean?
   // Alternatively: do we already have a random generator for booleans? Could
   // we wrap it in.
 
-  // def boolean :Gen[Boolean] = ...
+  def boolean :Gen[Boolean] = Gen(State(s => s.nextInt match { case (a, s2) => (a % 2 == 1, s2)}))
 
 
   // Hint: Recall from Exercise1.scala that we already implemented a random
   // number generator for doubles.
 
-  // def double :Gen[Double] = ...
+  def double :Gen[Double] = Gen(State(RNG._double))
 
 
 
@@ -177,9 +179,30 @@ case class Prop (run :(TestCases,RNG) => Result) {
 
   // (Exercise 7)
 
-  // def && (that :Prop) :Prop = Prop { ... }
+  def && (that :Prop) :Prop = Prop((tc, rng) => {
+    val r1 = this.run(tc, rng)
+    if (r1.isFalsified) r1 else that.run(tc, rng)
+  })
 
-  // def || (that :Prop) :Prop = Prop { ... }
+  def || (that :Prop) :Prop = Prop((tc, rng) => {
+    val r1 = this.run(tc, rng)
+    if (!r1.isFalsified) r1 else that.run(tc, rng)
+  })
+
+}
+
+object Test extends App {
+
+  val rng = RNG.Simple(System.currentTimeMillis())
+
+  // Exercise 1
+  val ex1 = Gen.choose(5, 11).sample.run(rng)._1
+  assert(ex1 >= 5 && ex1 < 11)
+
+  // Exercise 2
+  println(Gen.boolean.sample.run(rng)._1)
+
+  println(Gen.double.sample.run(rng)._1)
 
 }
 
