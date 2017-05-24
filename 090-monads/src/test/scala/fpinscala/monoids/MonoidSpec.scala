@@ -27,30 +27,28 @@ object MonoidSpec extends Properties("Monoids..") {
 
   property ("stringMonoid is a monoid") = monoid (stringMonoid)
 
-  // Exercise 4: test intAddition, intMultiplication, booleanOr,
-  // booleanAnd and optionMonoid.
+  // Exercise 4: test intAddition, intMultiplication, booleanOr, booleanAnd and optionMonoid.
 
-  // property ...
-  // property ...
-  // property ...
-  // property ...
-  // property ...
-  // property ...
+  property ("intAddition is a monoid") = monoid(intAddition)
+  property ("intMultiplication is a monoid") = monoid(intMultiplication)
+  property ("booleanOr is a monoid") = monoid(booleanOr)
+  property ("booleanAnd is a monoid") = monoid(booleanAnd)
+  property ("optionMonoid is a monoid") = monoid(optionMonoid[Int])
 
   // Exercise 5
 
-  // def homomorphism[A :Arbitrary,B :Arbitrary]
-  //  (ma: Monoid[A]) (f: A => B) (mb: Monoid[B]) =
+  def homomorphism[A :Arbitrary,B :Arbitrary] (ma: Monoid[A]) (f: A => B) (mb: Monoid[B]): Prop =
+     forAll( (a1: A, a2: A) => { mb.op(f(a1), f(a2)) == f(ma.op(a1, a2) )})
 
-  // def isomorphism[A :Arbitrary, B :Arbitrary] ...
+  def isomorphism[A :Arbitrary, B :Arbitrary] (ma: Monoid[A]) (mb: Monoid[B]) (fa: A => B) (fb: B => A): Prop =
+    forAll( (a: A, b: B) => { homomorphism(ma)(fa)(mb) && homomorphism(mb)(fb)(ma) && fa.andThen(fb)(a) == a && fb.andThen(fa)(b) == b })
 
-  // property ("stringMonoid and listMonoid[Char] are isomorphic") = ...
+  property ("stringMonoid and listMonoid[Char] are isomorphic") = isomorphism (stringMonoid) (listMonoid[Char]) (_.toList) (_.mkString)
 
   // Exercise 6
 
-  // property ("booleanOr and booleanAnd are isomorphic") =
+  property ("booleanOr and booleanAnd are isomorphic") = isomorphism (booleanOr) (booleanAnd) (a => !a) (b => !b)
 
   // Exercise 7 (the testing part)
-
-  // property ("productMonoid is a monoid") =
+  property ("productMonoid is a monoid") = monoid(productMonoid(optionMonoid[Int])(listMonoid[String]))
 }

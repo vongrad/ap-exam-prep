@@ -17,12 +17,11 @@ object FunctorSpec extends Properties("Functor[F[_]] properties..") {
   def mapLaw[A,F[_]] (fn :Functor[F]) (implicit arb: Arbitrary[F[A]]) :Prop =
     forAll { (fa :F[A]) => fn.map[A,A] (fa) (x=>x) == fa }
 
-  property ("Functor[List[Int]] satisfies the functor law") =
-    mapLaw[Int,List](ListFunctor)
+  property ("Functor[List[Int]] satisfies the functor law") = mapLaw[Int,List](ListFunctor)
 
   // Exercise 11 (for OptionFunctor)
 
-  // property ...
+  property ("Functor[Option[String]] satisfied the functor law") = mapLaw[String, Option](OptionFunctor)
 }
 
 

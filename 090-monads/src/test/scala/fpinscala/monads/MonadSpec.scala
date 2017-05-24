@@ -21,26 +21,25 @@ object  MonadSpec extends Properties("Monad[F[_]] laws..") {
   // weak function generator (only generates constant functions)
   def associative[A,F[_]] (m: Monad[F]) (implicit a: Arbitrary[F[A]]): Prop =
     forAll { (x: F[A], f: A => F[A], g: A => F[A]) =>
-      m.flatMap[A,A] (m.flatMap[A,A] (x) (f)) (g) ==
-      m.flatMap (x) (a => m.flatMap (f(a)) (g))
+      m.flatMap[A,A] (m.flatMap[A,A] (x) (f)) (g) == m.flatMap (x) (a => m.flatMap (f(a)) (g))
+
     }
 
-  def identity[A, F[_]] (m: Monad[F]) (implicit arbFA: Arbitrary[F[A]],
-    arbA: Arbitrary[A]): Prop =
-      forAll { (x: F[A], f: A => F[A]) =>
-      m.flatMap[A,A] (x) (m.unit[A] (_)) == x } :| "right unit" &&
+  def identity[A, F[_]] (m: Monad[F]) (implicit arbFA: Arbitrary[F[A]], arbA: Arbitrary[A]): Prop =
+    forAll { (x: F[A], f: A => F[A]) =>
+        m.flatMap[A,A] (x) (m.unit[A] (_)) == x } :| "right unit" &&
     forAll { (y :A, f: A => F[A]) =>
       m.flatMap[A,A] (m.unit[A](y)) (f) == f(y) } :| "left unit"
 
-  def monad[A,F[_]] (m :Monad[F]) (implicit arbFA: Arbitrary[F[A]],
-    arbA: Arbitrary[A]) :Prop =
+  def monad[A,F[_]] (m :Monad[F]) (implicit arbFA: Arbitrary[F[A]], arbA: Arbitrary[A]) :Prop =
     associative[A,F] (m) && identity[A,F] (m)
 
   // uncomment when you have optionMonad
-  // property ("of optionMonad") = monad[Int,Option] (optionMonad)
+  property ("of optionMonad") = monad[Int,Option] (optionMonad)
 
   // Now test more monads:
 
-  // property ...
+  property ("of listMonad[Int]") = monad[Int, List] (listMonad)
+  property ("of listMonad[String]") = monad[String, List] (listMonad)
 
 }

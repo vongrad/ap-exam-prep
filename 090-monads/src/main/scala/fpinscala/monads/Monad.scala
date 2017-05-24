@@ -25,7 +25,9 @@ object Functor {
 
   // Exercise 10
 
-  // val OptionFunctor =
+  val OptionFunctor = new Functor[Option] {
+    override def map[A, B](fa: Option[A])(f: (A) => B): Option[B] = fa.map(f)
+  }
 
 }
 
@@ -42,7 +44,7 @@ trait Monad[F[_]] {
 
   // Exercise 13 (CB11.3)
 
-  // def sequence[A] (lfa: List[F[A]]): F[List[A]] =
+  def sequence[A] (lfa: List[F[A]]): F[List[A]] = lfa.foldRight(unit(List.empty[A]))((a, b) => map2(a, b)((a, b) => a::b))
 
   // traverse seems to simply sequence results of mapping.  I do not think that
   // it appeared in our part. You can uncomment it once you have sequence.
@@ -50,7 +52,7 @@ trait Monad[F[_]] {
 
   // Exercise 14 (CB11.4)
 
-  // def replicateM[A] (n: Int, ma: F[A]): F[List[A]] =
+  def replicateM[A] (n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
 
   def join[A] (mma: F[F[A]]): F[A] = flatMap (mma) (ma => ma)
 
@@ -58,7 +60,7 @@ trait Monad[F[_]] {
 
   // Exercise 16 (CB11.7)
 
-  // def compose[A,B,C] (f: A => F[B], g: B => F[C]): A => F[C] =
+  def compose[A,B,C] (f: A => F[B], g: B => F[C]): A => F[C] = a => flatMap(f(a))(b => g(b))
 
 }
 
@@ -66,8 +68,20 @@ object Monad {
 
   // Exercise 12 (CB11.1)
 
-  // val optionMonad =
+  val optionMonad = new Monad[Option] {
+    override def unit[A](a: => A): Option[A] = Some(a)
+    override def flatMap[A, B](ma: Option[A])(f: (A) => Option[B]): Option[B] = ma.flatMap(f)
+  }
 
-  // val listMonad =
+  val listMonad = new Monad[List] {
+    override def unit[A](a: => A): List[A] = a::Nil
+    override def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] = ma.flatMap(f)
+  }
 
+}
+
+object Test extends App {
+  println(Monad.listMonad.sequence(List(List(1,2), List(3))))
+
+  //println(Monad.listMonad.replicateM(5, List(1,2,3)))
 }
