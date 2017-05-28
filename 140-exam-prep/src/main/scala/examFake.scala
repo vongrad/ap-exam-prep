@@ -35,6 +35,8 @@
 
 package adpro.examFake
 
+import adpro.data.FingerTree
+
 object Q1 {
 
   import scala.collection.mutable.ListBuffer
@@ -60,7 +62,11 @@ object Q1 {
     return result
   }
 
-  def listDifferentialFun (inList :List[Int]) :List[Int] = ??? // complete
+  def listDifferentialFun (inList :List[Int]) :List[Int] = inList match {
+    case Nil => List.empty[Int]
+    case List(_) => List.empty[Int]
+    case f::s::t => (s-f)::listDifferentialFun(s::t)
+  }
 
 }
 
@@ -83,8 +89,7 @@ object Q2 {
    * characters back to a String.
    */
 
-   def onList (f: String => String): List[Char] => List[Char] = ??? // complete
-
+   def onList (f: String => String): List[Char] => List[Char] = l => f(l.mkString).toList // complete
 }
 
 
@@ -107,7 +112,7 @@ object Q3 {
    * where z = M.zero and + is M.op .
    */
 
-  def foldBack[A] (l :List[A]) (implicit M :Monoid[A]) :A = ??? // complete
+  def foldBack[A] (l :List[A]) (implicit M :Monoid[A]) :A = (l++l.reverse).foldLeft(M.zero) (M.op) // complete
 
 }
 
@@ -141,7 +146,7 @@ object Q4 {
    * just for a type declaration.
    */
 
-   // def conditionalP ... = ??? // replace ..., leave ??? in place this time.
+   def conditionalP(e1: Event) (e2: Event): Option[Probability]  = ??? // replace ..., leave ??? in place this time.
 
 }
 
@@ -164,7 +169,7 @@ object Q5 {
    * but does not require using explicit delays like Branch.
    */
 
-  def branch[A] (l : =>Tree[A], r: =>Tree[A]) :Tree[A] = ???
+  def branch[A] (l : =>Tree[A], r: =>Tree[A]) :Tree[A] = Branch(() => l, () => r)
 
 }
 
@@ -203,7 +208,18 @@ object Q6 {
    * Include the type of the lens (partial/total), and the put and get function.
    */
 
-  def leftFT[A] = ???
+  def getL[A] (t: FingerTree[A]): Option[A] = viewL(t) match {
+    case NilTree() => None
+    case ConsL(h, _) => Some(h)
+  }
+
+  def setL[A] (a: A) (t: FingerTree[A]): FingerTree[A] = viewL(t) match {
+    case NilTree() => Empty().addL(a)
+    case ConsL(_, t) => t.addL(a)
+  }
+
+
+  def leftFT[A] = Optional[FingerTree[A], A](getL) (setL)
 
 
 
@@ -215,7 +231,8 @@ object Q6 {
    *  anologous functionality for the right end of the deque
    */
 
-
+  // We would need to have the viewR, consR and addR functions definite that would mimic the corresponding *L functions.
+  // Then the implementation would be a complete mirror of the leftLense
 }
 
 
@@ -233,6 +250,10 @@ object Question7 {
    * of Scala library have used this type operator there? Explain in English (or
    * Danish).
    */
+
+  // It means that the elem parameter is lazy, meaning it will not be evaluated as it is passed into the function
+  // This is more efficient as we do not have to evaluate it upfront (it could be a function that returns element a and is heavy on computation)
+  // Probably could be also cached so it does not need to be evaluated every time
 
 
 
@@ -254,7 +275,7 @@ object Question7 {
 
   val arbitraryInt :Gen[Int] = ??? // assume that this exists.
 
-  val multiplesOf10 = ??? // complete this
+  val multiplesOf10: Gen[Int] = arbitraryInt.map(a => (a / 10) * 10) // complete this
 
 
 
@@ -267,7 +288,7 @@ object Question7 {
    * Provide an explicit type for multiplesOf10UpTo
    */
 
-  // def multiplesOf10UpTo ...
+  def multiplesOf10UpTo: Int => Gen[Int] = (m: Int) => arbitraryInt.map(n => ((n / 10) % (m / 10)) * 10)
 
 }
 
@@ -294,8 +315,12 @@ object Question8 {
    * explanation should not be long (4-5 lines will suffice).
    **/
 
-  val v1 = arbitraryInt.flatMap (n => listOfN(n, arbitraryInt))
-  val v2 = arbitraryInt.flatMap (n => listOfN(n, arbitraryInt)).
+  val v1: Gen[List[Int]] = arbitraryInt.flatMap (n => listOfN(n, arbitraryInt))
+  val v2: (List[Int], RNG) = arbitraryInt.flatMap (n => listOfN(n, arbitraryInt)).
            sample.run (RNG.Simple(42))
+
+}
+
+object Test extends App {
 
 }

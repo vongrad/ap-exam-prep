@@ -51,6 +51,7 @@ object Lenses {
   // page 6 in Foster et al.
 
   // Satisfies PUT-GET, but not GET-PUT
+  // !! PARAMETERS ORDER - FIRST WHAT COMES INTO THE LENS, THEN WHAT SHOULD COME OUT
   val l1 = Lens[(String,Int), String] (_._1) (s1 => _ => (s1, 0))
 
   // Complete the second example from page 6, and the example from page 7 below:
